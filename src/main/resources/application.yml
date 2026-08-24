@@ -1,0 +1,16 @@
+spring:
+  datasource:
+    driver-class-name: com.mysql.cj.jdbc.Driver
+    # ?? URL ?? &allowPublicKeyRetrieval=true ??
+    url: jdbc:mysql://localhost:3306/plan_manager?useSSL=false&serverTimezone=Asia/Seoul&characterEncoding=UTF-8&allowPublicKeyRetrieval=true&createDatabaseIfNotExist=true
+    username: root
+    password: 1234
+  jpa:
+    hibernate:
+      ddl-auto: update
+    show-sql: true
+
+
+jwt:
+  secret: VmVyeVNlY3JldEtleUZvclBsYW5NYW5hZ2VyQXBwbGljYXRpb25BdXRoZW50aWNhdGlvblB1cnBvc2U= # HMAC-SHA 알고리즘 규격에 맞춘 256비트(32바이트) 이상의 Base64 인코딩 문자열
+  expiration: 86400000 # 24시간 (밀리초 단위)

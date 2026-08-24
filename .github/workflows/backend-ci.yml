@@ -1,38 +1,32 @@
 name: Spring Boot CI
 
-# 워크플로우 실행 트리거: develop, main 브랜치에 Push 또는 PR 발생 시
 on:
   push:
-    branches: [ "develop", "main" ]
+    branches: [ "main", "develop" ]
   pull_request:
-    branches: [ "develop", "main" ]
+    branches: [ "main", "develop" ]
 
 jobs:
   build:
-    runs-on: ubuntu-latest # 최신 리눅스 환경에서 실행
+    runs-on: ubuntu-latest
 
     steps:
-      # 1. 소스 코드 체크아웃
       - name: Checkout code
         uses: actions/checkout@v4
 
-      # 2. JDK 17 환경 세팅 (Spring Boot 3.x 기준)
       - name: Set up JDK 17
         uses: actions/setup-java@v4
         with:
           java-version: '17'
           distribution: 'temurin'
-          cache: 'gradle' # 💡 핵심: Gradle 의존성 캐싱으로 빌드 속도 최적화
+          cache: 'gradle'
 
-      # 3. Gradle 래퍼 실행 권한 부여
       - name: Grant execute permission for gradlew
         run: chmod +x gradlew
 
-      # 4. 빌드 및 테스트 수행 (build 명령어는 자동으로 test를 포함)
       - name: Build with Gradle
         run: ./gradlew build
 
-      # 5. 빌드 성공 시 산출물(JAR)을 GitHub에 업로드 (다운로드 가능)
       - name: Upload Build Artifact
         uses: actions/upload-artifact@v4
         with:

@@ -3,9 +3,8 @@ spring:
   datasource:
     driver-class-name: com.mysql.cj.jdbc.Driver
     url: jdbc:mysql://localhost:3306/planmanager?useSSL=false&allowPublicKeyRetrieval=true&serverTimezone=Asia/Seoul
-    username: admin  # 💡 root에서 admin으로 변경
+    username: admin  # 💡 반드시 root에서 admin으로 변경해야 합니다.
     password: 1234
-
   jpa:
     hibernate:
       ddl-auto: update

@@ -3,8 +3,8 @@ spring:
   datasource:
     driver-class-name: com.mysql.cj.jdbc.Driver
     url: jdbc:mysql://localhost:3306/planmanager?useSSL=false&allowPublicKeyRetrieval=true&serverTimezone=Asia/Seoul
-    username: root
-    password: 1234  # 💡 이전 단계에서 MySQL에 설정한 비밀번호와 100% 일치해야 함
+    username: admin  # 💡 root에서 admin으로 변경
+    password: 1234
 
   jpa:
     hibernate:

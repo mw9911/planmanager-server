@@ -14,7 +14,6 @@ spring:
     show-sql: true
 
 jwt:
-  secret: "v3ry-l0ng-s3cr3t-k3y-f0r-plan-manager-s3rv3r-applicati0n-s3cur1ty-updat3d"
-  # 만료 시간을 밀리초(ms) 단위로 설정합니다. (예: 86400000 = 24시간)
-  # 코드에 long 타입으로 선언되어 있을 확률이 높으므로 숫자로 적습니다.
+  # 하이픈(-)이나 언더바(_)가 없는 완벽한 Base64 인코딩 문자열입니다.
+  secret: "cGxhbm1hbmFnZXJzZXJ2ZXJhcHBsaWNhdGlvbnNlY3JldGtleTIwMjYwODI2"
   expiration: 86400000

@@ -2,7 +2,6 @@ name: Spring Boot CI/CD to AWS EC2
 
 on:
   push:
-    # 팩트 체크 1: 본인 GitHub 프로젝트의 기본 브랜치명이 'main'인지 'master'인지 확인 후 수정하십시오.
     branches: [ "main" ]
 
 jobs:
@@ -18,7 +17,6 @@ jobs:
       - name: Set up JDK
         uses: actions/setup-java@v3
         with:
-          # 팩트 체크 2: 프로젝트의 Java 버전에 맞게 숫자(예: 11, 17, 21)를 수정하십시오.
           java-version: '17'
           distribution: 'corretto'
 
@@ -42,27 +40,26 @@ jobs:
           strip_components: 2
 
       # 6. EC2 접속 후 애플리케이션 재시작
-      - # 6. EC2 접속 후 애플리케이션 재시작
-        - name: Execute Script on EC2
-          uses: appleboy/ssh-action@master
-          with:
-            host: ${{ secrets.EC2_HOST }}
-            username: ${{ secrets.EC2_USERNAME }}
-            key: ${{ secrets.EC2_KEY }}
-            script: |
-              cd /home/ubuntu/planmanager
-              
-              # 기존 프로세스 포착 및 안전 종료 (|| true 추가로 강제 에러 방지)
-              PID=$(pgrep -f .jar)
-              if [ -n "$PID" ]; then
-                echo "기존 프로세스 종료: $PID"
-                kill -15 $PID || true
-                sleep 10
-              fi
-              
-              # 최신 Jar 파일 포착
-              JAR_NAME=$(ls -tr *.jar | tail -n 1)
-              echo "새로운 애플리케이션 실행: $JAR_NAME"
-              
-              # SSH 세션과의 완벽한 분리를 위해 </dev/null 추가 (핵심 조치 ⭐)
-              nohup java -jar $JAR_NAME> application.log 2>&1 </dev/null &
+      - name: Execute Script on EC2
+        uses: appleboy/ssh-action@master
+        with:
+          host: ${{ secrets.EC2_HOST }}
+          username: ${{ secrets.EC2_USERNAME }}
+          key: ${{ secrets.EC2_KEY }}
+          script: |
+            cd /home/ubuntu/planmanager
+            
+            # 기존 프로세스 포착 및 안전 종료 (|| true 추가로 강제 에러 방지)
+            PID=$(pgrep -f .jar)
+            if [ -n "$PID" ]; then
+              echo "기존 프로세스 종료: $PID"
+              kill -15 $PID || true
+              sleep 10
+            fi
+            
+            # 최신 Jar 파일 포착
+            JAR_NAME=$(ls -tr *.jar | tail -n 1)
+            echo "새로운 애플리케이션 실행: $JAR_NAME"
+            
+            # SSH 세션과의 완벽한 분리를 위해 </dev/null 추가 (핵심 조치 ⭐)
+            nohup java -jar $JAR_NAME> application.log 2>&1 </dev/null &

@@ -13,7 +13,8 @@ spring:
       ddl-auto: update
     show-sql: true
 
-# 아래 블록을 새로 추가합니다.
 jwt:
-  # JWT 최신 라이브러리(0.12.x)는 강력한 보안을 요구하므로 최소 32자(또는 64자) 이상의 임의 문자열을 기입해야 합니다.
   secret: "v3ry-l0ng-s3cr3t-k3y-f0r-plan-manager-s3rv3r-applicati0n-s3cur1ty-updat3d"
+  # 만료 시간을 밀리초(ms) 단위로 설정합니다. (예: 86400000 = 24시간)
+  # 코드에 long 타입으로 선언되어 있을 확률이 높으므로 숫자로 적습니다.
+  expiration: 86400000

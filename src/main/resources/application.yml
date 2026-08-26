@@ -3,9 +3,8 @@ spring:
     driver-class-name: com.mysql.cj.jdbc.Driver
     url: jdbc:mysql://planmanager-db.c5ky8g0ccs0m.ap-northeast-2.rds.amazonaws.com:3306/planmanager?serverTimezone=Asia/Seoul&characterEncoding=UTF-8
     username: admin
-    password: zxdasc12  # 주의: 따옴표 없이, 띄어쓰기 없이 정확히 입력
+    password: zxdasc12
   jpa:
-    # 에러를 우회하고 진짜 원인을 찾기 위해 Dialect를 강제로 주입합니다.
     database-platform: org.hibernate.dialect.MySQLDialect
     properties:
       hibernate:
@@ -13,3 +12,8 @@ spring:
     hibernate:
       ddl-auto: update
     show-sql: true
+
+# 아래 블록을 새로 추가합니다.
+jwt:
+  # JWT 최신 라이브러리(0.12.x)는 강력한 보안을 요구하므로 최소 32자(또는 64자) 이상의 임의 문자열을 기입해야 합니다.
+  secret: "v3ry-l0ng-s3cr3t-k3y-f0r-plan-manager-s3rv3r-applicati0n-s3cur1ty-updat3d"

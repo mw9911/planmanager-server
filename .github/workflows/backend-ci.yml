@@ -1,71 +1,67 @@
-name: Spring Boot CI/CD
+name: Spring Boot CI/CD to AWS EC2
 
 on:
   push:
-    branches: [ "main", "develop" ]
-  pull_request:
-    branches: [ "main", "develop" ]
+    # 팩트 체크 1: 본인 GitHub 프로젝트의 기본 브랜치명이 'main'인지 'master'인지 확인 후 수정하십시오.
+    branches: [ "main" ]
 
 jobs:
-  build:
+  deploy:
     runs-on: ubuntu-latest
+
     steps:
-      - name: Checkout code
-        uses: actions/checkout@v4
+      # 1. 소스 코드 체크아웃
+      - name: Checkout Code
+        uses: actions/checkout@v3
 
-      - name: Set up JDK 17
-        uses: actions/setup-java@v4
+      # 2. JDK 환경 셋팅
+      - name: Set up JDK
+        uses: actions/setup-java@v3
         with:
+          # 팩트 체크 2: 프로젝트의 Java 버전에 맞게 숫자(예: 11, 17, 21)를 수정하십시오.
           java-version: '17'
-          distribution: 'temurin'
-          cache: 'gradle'
+          distribution: 'corretto'
 
+      # 3. Gradle 빌드 권한 부여
       - name: Grant execute permission for gradlew
         run: chmod +x gradlew
 
+      # 4. 프로젝트 빌드 (프리티어 메모리 최적화를 위해 test 스킵)
       - name: Build with Gradle
-        run: ./gradlew build
+        run: ./gradlew clean build -x test
 
-      - name: Upload Build Artifact
-        uses: actions/upload-artifact@v4
-        with:
-          name: backend-jar
-          path: build/libs/*-SNAPSHOT.jar
-
-  deploy:
-    needs: build # build 작업이 성공해야만 deploy 실행
-    runs-on: ubuntu-latest
-    if: github.ref == 'refs/heads/main' || github.ref == 'refs/heads/develop'
-
-    steps:
-      - name: Download Artifact
-        uses: actions/download-artifact@v4
-        with:
-          name: backend-jar
-          path: ./deploy
-
-      - name: SCP - Transfer JAR to EC2
+      # 5. EC2 서버로 빌드된 Jar 파일 전송
+      - name: Transfer Jar to EC2
         uses: appleboy/scp-action@master
         with:
           host: ${{ secrets.EC2_HOST }}
           username: ${{ secrets.EC2_USERNAME }}
-          key: ${{ secrets.EC2_PRIVATE_KEY }}
-          source: "deploy/*.jar"
+          key: ${{ secrets.EC2_KEY }}
+          source: "build/libs/*SNAPSHOT.jar"
           target: "/home/ubuntu/planmanager"
-          strip_components: 1
+          strip_components: 2
 
-      - name: SSH - Execute Deployment Script
+      # 6. EC2 접속 후 애플리케이션 재시작
+      - name: Execute Script on EC2
         uses: appleboy/ssh-action@master
         with:
           host: ${{ secrets.EC2_HOST }}
           username: ${{ secrets.EC2_USERNAME }}
-          key: ${{ secrets.EC2_PRIVATE_KEY }}
+          key: ${{ secrets.EC2_KEY }}
           script: |
             cd /home/ubuntu/planmanager
             
-            # 1. 실행 중인 구버전 Spring Boot 프로세스 종료 (8080 포트)
-            fuser -k -n tcp 8080 || true
-            sleep 5
+            # 기존에 실행 중인 Spring Boot 프로세스 포착 및 안전 종료
+            PID=$(pgrep -f .jar)
+            if [ -n "$PID" ]; then
+              echo "기존 프로세스 종료: $PID"
+              kill -9 $PID
+              sleep 5
+            fi
             
-            # 2. 새 버전 백그라운드 무중단 실행 (로그는 app.log에 기록)
-            nohup java -jar *.jar > app.log 2>&1 &
+            # 최신 Jar 파일 포착
+            JAR_NAME=$(ls -tr *.jar | tail -n 1)
+            echo "새로운 애플리케이션 실행: $JAR_NAME"
+            
+            # 백그라운드 무중단 실행 (로그 파일 분리)
+            nohup java -jar $JAR_NAME > application.log 2>&1 &

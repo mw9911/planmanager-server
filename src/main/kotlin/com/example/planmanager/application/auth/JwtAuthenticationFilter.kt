@@ -29,6 +29,7 @@ class JwtAuthenticationFilter(
             if (jwtProvider.validateToken(token)) {
                 println("✅ 토큰 검증 성공!")
                 val userId = jwtProvider.getUserIdFromToken(token)
+                println("🚨 안드로이드가 보낸 토큰의 주인(userId): $userId") // 이 값이 1(A계정)인지 2(B계정)인지 확인
                 request.setAttribute("userId", userId)
 
                 val authentication = UsernamePasswordAuthenticationToken(

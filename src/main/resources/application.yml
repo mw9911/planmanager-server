@@ -1,17 +1,15 @@
-
 spring:
   datasource:
     driver-class-name: com.mysql.cj.jdbc.Driver
-    # 완벽하게 매핑된 실서버 DB 주소입니다.
     url: jdbc:mysql://planmanager-db.c5ky8g0ccs0m.ap-northeast-2.rds.amazonaws.com:3306/planmanager?serverTimezone=Asia/Seoul&characterEncoding=UTF-8
     username: admin
-    password: zxdasc12
+    password: zxdasc12  # 주의: 따옴표 없이, 띄어쓰기 없이 정확히 입력
   jpa:
-    database-platform: org.hibernate.dialect.MySQL8Dialect
+    # 에러를 우회하고 진짜 원인을 찾기 위해 Dialect를 강제로 주입합니다.
+    database-platform: org.hibernate.dialect.MySQLDialect
+    properties:
+      hibernate:
+        dialect: org.hibernate.dialect.MySQLDialect
     hibernate:
       ddl-auto: update
     show-sql: true
-
-jwt:
-  secret: VmVyeVNlY3JldEtleUZvclBsYW5NYW5hZ2VyQXBwbGljYXRpb25BdXRoZW50aWNhdGlvblB1cnBvc2U= # HMAC-SHA 알고리즘 규격에 맞춘 256비트(32바이트) 이상의 Base64 인코딩 문자열
-  expiration: 86400000 # 24시간 (밀리초 단위)

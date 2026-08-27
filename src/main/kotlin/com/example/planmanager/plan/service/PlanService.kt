@@ -33,14 +33,14 @@ class PlanService(
     fun togglePlanStatus(planId: Long, userId: String) {
         val plan = planRepository.findByIdOrNull(planId)
             ?: throw IllegalArgumentException("존재하지 않는 계획입니다.")
-        if (plan.userId != userId) throw SecurityException("권한이 없습니다.")
+        if (plan.userId != userId.toLong()) throw SecurityException("권한이 없습니다.")
         plan.toggleComplete()
     }
 
     fun deletePlan(planId: Long, userId: String) {
         val plan = planRepository.findByIdOrNull(planId)
             ?: throw IllegalArgumentException("존재하지 않는 계획입니다.")
-        if (plan.userId != userId) throw SecurityException("권한이 없습니다.")
+        if (plan.userId != userId.toLong()) throw SecurityException("권한이 없습니다.")
         planRepository.delete(plan)
     }
 }

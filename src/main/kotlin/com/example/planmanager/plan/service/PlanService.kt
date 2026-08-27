@@ -22,7 +22,7 @@ class PlanService(
 
     fun createPlan(userId: String, request: PlanCreateRequest): PlanResponse {
         val plan = PlanEntity(
-            userId = userId,
+            userId = userId.toLong(),
             title = request.title,
             planDate = request.planDate
         )

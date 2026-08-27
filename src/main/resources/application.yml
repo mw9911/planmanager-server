@@ -17,3 +17,7 @@ jwt:
   # 하이픈(-)이나 언더바(_)가 없는 완벽한 Base64 인코딩 문자열입니다.
   secret: "cGxhbm1hbmFnZXJzZXJ2ZXJhcHBsaWNhdGlvbnNlY3JldGtleTIwMjYwODI2"
   expiration: 86400000
+
+#jwt:
+#  secret: VmVyeVNlY3JldEtleUZvclBsYW5NYW5hZ2VyQXBwbGljYXRpb25BdXRoZW50aWNhdGlvblB1cnBvc2U= # HMAC-SHA 알고리즘 규격에 맞춘 256비트(32바이트) 이상의 Base64 인코딩 문자열
+#  expiration: 86400000 # 24시간 (밀리초 단위)

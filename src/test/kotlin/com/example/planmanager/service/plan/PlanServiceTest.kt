@@ -27,13 +27,13 @@ class PlanServiceTest {
         // [1] Arrange (준비)
         val userId = "3"
         val request = PlanCreateRequest(title = "TDD 테스트", planDate = LocalDate.parse("2026-08-23"))
-        val mockEntity = PlanEntity(userId = userId, title = request.title, planDate = request.planDate)
+        val mockEntity = PlanEntity(userId = userId.toLong(), title = request.title, planDate = request.planDate)
 
         // Mocking: save 호출 시 가짜 엔티티 반환 설정
         every { planRepository.save(any()) } returns mockEntity
 
         // [2] Act (실행)
-        val result = planService.createPlan(userId, request)
+        val result = planService.createPlan(userId.toLong(), request)
 
         // [3] Assert (검증)
         assertEquals("TDD 테스트", result.title)

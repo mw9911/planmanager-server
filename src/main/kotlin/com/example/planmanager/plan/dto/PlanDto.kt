@@ -29,3 +29,12 @@ data class PlanResponse(
         isCompleted = entity.isCompleted
     )
 }
+data class PlanSyncRequest(
+    val title: String,
+
+    // 💡 단일 생성과 동일하게 직렬화 규격 강제
+    @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd")
+    val planDate: LocalDate,
+
+    val isCompleted: Boolean
+)

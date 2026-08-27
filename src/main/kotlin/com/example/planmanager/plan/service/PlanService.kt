@@ -18,7 +18,7 @@ class PlanService(
     // 💡 날짜 파라미터를 없애고, 날짜 오름차순으로 전체 데이터를 가져옵니다.
     @Transactional(readOnly = true)
     fun getAllPlans(userId: String): List<PlanResponse> {
-        return planRepository.findAllByUserIdOrderByPlanDateAsc(userId)
+        return planRepository.findAllByUserIdOrderByPlanDateAsc(userId.toLong())
             .map { PlanResponse(it) }
     }
 

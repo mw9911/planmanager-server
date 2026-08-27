@@ -21,7 +21,8 @@ class CalendarService(
 
         // 1. Plan 데이터 병합
         // 💡 주의: PlanEntity의 userId는 String 타입이므로 toString() 변환을 거칩니다.
-        val plans = planRepository.findAllByUserIdAndPlanDateBetween(userId.toString(), startDate, endDate)
+        // 1. Plan 데이터 병합
+        val plans = planRepository.findAllByUserIdAndPlanDateBetween(userId, startDate, endDate)
         calendarItems.addAll(
             plans.map {
                 CalendarItemResponse(

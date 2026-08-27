@@ -7,7 +7,7 @@ import java.time.LocalDate
 @Table(name = "plans")
 class PlanEntity(
     @Column(nullable = false)
-    val userId: String,
+    val userId: Long,
 
     @Column(nullable = false)
     var title: String,

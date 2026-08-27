@@ -1,5 +1,7 @@
 package com.example.planmanager.plan.service
 
+import com.example.planmanager.infrastructure.security.entity.RefreshTokenEntity
+import com.example.planmanager.infrastructure.security.entity.RefreshTokenRepository
 import com.example.planmanager.plan.entity.PlanEntity
 import com.example.planmanager.plan.repository.PlanRepository
 import com.example.planmanager.plan.dto.PlanCreateRequest

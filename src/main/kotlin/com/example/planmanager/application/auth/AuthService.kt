@@ -1,5 +1,7 @@
 package com.example.planmanager.application.auth
 
+import com.example.planmanager.infrastructure.security.entity.RefreshTokenEntity
+import com.example.planmanager.infrastructure.security.entity.RefreshTokenRepository
 import com.example.planmanager.infrastructure.user.UserEntity
 import com.example.planmanager.infrastructure.user.UserRepository
 import org.springframework.security.crypto.password.PasswordEncoder
@@ -10,7 +12,8 @@ import org.springframework.transaction.annotation.Transactional
 class AuthService(
     private val userRepository: UserRepository,
     private val passwordEncoder: PasswordEncoder,
-    private val jwtProvider: JwtProvider
+    private val jwtProvider: JwtProvider,
+    private val refreshTokenRepository: RefreshTokenRepository // 💡 누락되었던 의존성 주입 추가
 ) {
 
     @Transactional
@@ -24,18 +27,49 @@ class AuthService(
 
         userRepository.save(UserEntity(email = email, passwordHash = encodedPassword))
     }
-
-    @Transactional(readOnly = true)
-    fun login(email: String, rawPassword: String): String {
+    @Transactional
+    fun login(email: String, rawPassword: String): Pair<String, String> {
         val user = userRepository.findByEmail(email)
             ?: throw IllegalArgumentException("존재하지 않는 이메일입니다.")
 
-        // 평문 비밀번호와 암호화된 해시값 비교 검증
         if (!passwordEncoder.matches(rawPassword, user.passwordHash)) {
             throw IllegalArgumentException("비밀번호가 일치하지 않습니다.")
         }
 
-        // 검증 성공 시 JWT 토큰 발급
-        return jwtProvider.createToken(user.id, user.role)
+        // Access / Refresh 토큰 쌍 발급
+        val accessToken = jwtProvider.createAccessToken(user.id, user.role)
+        val refreshToken = jwtProvider.createRefreshToken(user.id, user.role)
+
+        // DB에 Refresh Token 저장 (기존에 있으면 업데이트)
+        val tokenEntity = refreshTokenRepository.findById(user.id)
+            .map { it.apply { this.token = refreshToken } }
+            .orElse(RefreshTokenEntity(userId = user.id, token = refreshToken))
+        refreshTokenRepository.save(tokenEntity)
+
+        return Pair(accessToken, refreshToken)
+    }
+
+    @Transactional
+    fun reissueToken(requestRefreshToken: String): Pair<String, String> {
+        if (!jwtProvider.validateToken(requestRefreshToken)) {
+            throw IllegalArgumentException("만료되었거나 유효하지 않은 Refresh Token입니다.")
+        }
+
+        val userId = jwtProvider.getUserIdFromToken(requestRefreshToken)
+        val tokenEntity = refreshTokenRepository.findById(userId)
+            .orElseThrow { IllegalArgumentException("서버에 존재하지 않는 토큰입니다.") }
+
+        if (tokenEntity.token != requestRefreshToken) {
+            throw IllegalArgumentException("토큰 정보가 일치하지 않습니다. 다시 로그인해주세요.")
+        }
+
+        val user = userRepository.findById(userId).orElseThrow()
+
+        // Token Rotation: 새 토큰 쌍 발급 및 DB 갱신
+        val newAccessToken = jwtProvider.createAccessToken(userId, user.role)
+        val newRefreshToken = jwtProvider.createRefreshToken(userId, user.role)
+
+        tokenEntity.token = newRefreshToken
+        return Pair(newAccessToken, newRefreshToken)
     }
 }

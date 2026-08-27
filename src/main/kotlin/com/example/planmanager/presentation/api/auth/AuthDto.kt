@@ -11,6 +11,7 @@ data class LoginRequest(
 )
 
 data class AuthResponse(
-    val token: String?,
+    val accessToken: String?,
+    val refreshToken: String?,
     val message: String
 )

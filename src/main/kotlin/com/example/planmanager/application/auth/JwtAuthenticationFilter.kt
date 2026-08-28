@@ -14,6 +14,15 @@ import org.springframework.web.filter.OncePerRequestFilter
 class JwtAuthenticationFilter(
     private val jwtProvider: JwtProvider
 ) : OncePerRequestFilter() {
+
+
+    // 💡 핵심 교정: /api/v1/auth/ 하위의 모든 API(로그인, 갱신 등)는 이 필터를 무시하고 곧바로 통과시킴
+    override fun shouldNotFilter(request: HttpServletRequest): Boolean {
+        val path = request.requestURI
+        return path.startsWith("/api/v1/auth/")
+    }
+
+
     override fun doFilterInternal(
         request: HttpServletRequest,
         response: HttpServletResponse,

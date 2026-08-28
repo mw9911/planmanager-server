@@ -50,6 +50,26 @@ class JwtProvider {
     }
 
     // validateToken, getUserIdFromToken 로직은 기존 코드[cite: 10]와 동일하게 유지
-    fun validateToken(token: String): Boolean { /* 기존 코드 유지 */ return true }
-    fun getUserIdFromToken(token: String): Long { /* 기존 코드 유지 */ return 1L }
+    fun getUserIdFromToken(token: String): Long {
+        val claims = Jwts.parser()
+            .verifyWith(key) // 💡 서명 검증을 위한 Key 삽입
+            .build()
+            .parseSignedClaims(token)
+            .payload
+
+        return claims.subject.toLong() // 💡 하드코딩 1L을 제거하고 실제 토큰에 담긴 값을 추출
+    }
+
+    // 토큰 유효성 검증 로직 정상화 (만료 여부, 변조 여부 체크)
+    fun validateToken(token: String): Boolean {
+        return try {
+            Jwts.parser()
+                .verifyWith(key)
+                .build()
+                .parseSignedClaims(token)
+            true
+        } catch (e: Exception) {
+            false // 만료되거나 손상된 토큰일 경우 false 반환
+        }
+    }
 }

@@ -16,10 +16,9 @@ spring:
 jwt:
   # 하이픈(-)이나 언더바(_)가 없는 완벽한 Base64 인코딩 문자열입니다.
   secret: "cGxhbm1hbmFnZXJzZXJ2ZXJhcHBsaWNhdGlvbnNlY3JldGtleTIwMjYwODI2"
-  #expiration: 1800000 # 기존 Access Token 만료 시간 (예: 30분 = 1000 * 60 * 30)
-  #refresh-expiration: 1209600000 # 💡 신규 추가: Refresh Token 만료 시간 (예: 14일 = 1000 * 60 * 60 * 24 * 14)
-  expiration: 10000          # 💡 Access Token 만료: 10초
-  refresh-expiration: 1209600000  # 💡 Refresh Token 만료: 1분 (60초)
+  expiration: 1800000 # 기존 Access Token 만료 시간 (예: 30분 = 1000 * 60 * 30)
+  refresh-expiration: 1209600000 # 💡 신규 추가: Refresh Token 만료 시간 (예: 14일 = 1000 * 60 * 60 * 24 * 14)
+
 #jwt:
 #  secret: VmVyeVNlY3JldEtleUZvclBsYW5NYW5hZ2VyQXBwbGljYXRpb25BdXRoZW50aWNhdGlvblB1cnBvc2U= # HMAC-SHA 알고리즘 규격에 맞춘 256비트(32바이트) 이상의 Base64 인코딩 문자열
 #  expiration: 86400000 # 24시간 (밀리초 단위)

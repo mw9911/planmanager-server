@@ -10,7 +10,6 @@ import org.springframework.security.web.authentication.WebAuthenticationDetailsS
 import org.springframework.stereotype.Component
 import org.springframework.web.filter.OncePerRequestFilter
 
-// 백엔드 Spring Boot: JwtAuthenticationFilter.kt 수정
 @Component
 class JwtAuthenticationFilter(
     private val jwtProvider: JwtProvider
@@ -23,23 +22,32 @@ class JwtAuthenticationFilter(
         val token = resolveToken(request)
 
         try {
-            if (token != null && jwtProvider.validateToken(token)) {
-                val userId = jwtProvider.getUserIdFromToken(token)
-                request.setAttribute("userId", userId)
+            if (token != null) {
+                // 💡 분기점: 토큰 검증 성공 vs 실패
+                if (jwtProvider.validateToken(token)) {
+                    val userId = jwtProvider.getUserIdFromToken(token)
+                    request.setAttribute("userId", userId)
 
-                val authentication = UsernamePasswordAuthenticationToken(
-                    userId, null, listOf(SimpleGrantedAuthority("ROLE_USER"))
-                )
-                authentication.details = WebAuthenticationDetailsSource().buildDetails(request)
-                SecurityContextHolder.getContext().authentication = authentication
+                    val authentication = UsernamePasswordAuthenticationToken(
+                        userId, null, listOf(SimpleGrantedAuthority("ROLE_USER"))
+                    )
+                    authentication.details = WebAuthenticationDetailsSource().buildDetails(request)
+                    SecurityContextHolder.getContext().authentication = authentication
+                } else {
+                    // 💡 핵심 교정: validateToken이 false를 반환하면(만료 등) 즉시 401 반환 후 종료
+                    response.status = HttpServletResponse.SC_UNAUTHORIZED
+                    response.contentType = "application/json;charset=UTF-8"
+                    response.writer.write("""{"error": "Unauthorized", "message": "토큰이 만료되었거나 유효하지 않습니다."}""")
+                    return
+                }
             }
+            // 토큰이 없는 정상적인 로그인/회원가입 요청 등은 필터 통과
             filterChain.doFilter(request, response)
         } catch (e: Exception) {
-            // 💡 핵심: 토큰 검증에 실패하면 403이 아닌 401 Unauthorized를 명시적으로 반환
             response.status = HttpServletResponse.SC_UNAUTHORIZED
             response.contentType = "application/json;charset=UTF-8"
-            response.writer.write("""{"error": "Unauthorized", "message": "토큰이 만료되었거나 유효하지 않습니다."}""")
-            return // 필터 체인 중단
+            response.writer.write("""{"error": "Unauthorized", "message": "인증 처리 중 에러 발생"}""")
+            return
         }
     }
 

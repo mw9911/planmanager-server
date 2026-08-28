@@ -10,6 +10,7 @@ import org.springframework.security.web.authentication.WebAuthenticationDetailsS
 import org.springframework.stereotype.Component
 import org.springframework.web.filter.OncePerRequestFilter
 
+// 백엔드 Spring Boot: JwtAuthenticationFilter.kt 수정
 @Component
 class JwtAuthenticationFilter(
     private val jwtProvider: JwtProvider
@@ -21,15 +22,9 @@ class JwtAuthenticationFilter(
     ) {
         val token = resolveToken(request)
 
-        // 💡 디버깅용 로그 추가: 어떤 요청이 들어왔고, 토큰이 잘 파싱되었는지 확인
-        println("요청 URI: ${request.requestURI}")
-        if (token == null) {
-            println("🚨 에러: 앱에서 Authorization 헤더(토큰)를 보내지 않았습니다.")
-        } else {
-            if (jwtProvider.validateToken(token)) {
-                println("✅ 토큰 검증 성공!")
+        try {
+            if (token != null && jwtProvider.validateToken(token)) {
                 val userId = jwtProvider.getUserIdFromToken(token)
-                println("🚨 안드로이드가 보낸 토큰의 주인(userId): $userId") // 이 값이 1(A계정)인지 2(B계정)인지 확인
                 request.setAttribute("userId", userId)
 
                 val authentication = UsernamePasswordAuthenticationToken(
@@ -37,22 +32,21 @@ class JwtAuthenticationFilter(
                 )
                 authentication.details = WebAuthenticationDetailsSource().buildDetails(request)
                 SecurityContextHolder.getContext().authentication = authentication
-            } else {
-                println("🚨 에러: 토 큰이 전달되었으나 서버가 검증(validateToken)을 실패했습니다. (만료, 키 불일치 등)")
             }
+            filterChain.doFilter(request, response)
+        } catch (e: Exception) {
+            // 💡 핵심: 토큰 검증에 실패하면 403이 아닌 401 Unauthorized를 명시적으로 반환
+            response.status = HttpServletResponse.SC_UNAUTHORIZED
+            response.contentType = "application/json;charset=UTF-8"
+            response.writer.write("""{"error": "Unauthorized", "message": "토큰이 만료되었거나 유효하지 않습니다."}""")
+            return // 필터 체인 중단
         }
-
-        filterChain.doFilter(request, response)
     }
 
-
-    /**
-     * HTTP 헤더에서 'Bearer '로 시작하는 토큰 문자열 추출
-     */
     private fun resolveToken(request: HttpServletRequest): String? {
         val bearerToken = request.getHeader("Authorization")
         if (bearerToken != null && bearerToken.startsWith("Bearer ")) {
-            return bearerToken.substring(7) // "Bearer " 이후의 순수 토큰만 반환
+            return bearerToken.substring(7)
         }
         return null
     }

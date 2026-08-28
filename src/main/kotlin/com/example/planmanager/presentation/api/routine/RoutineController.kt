@@ -47,4 +47,24 @@ class RoutineController(
         routineService.toggleItem(userId.toLong(), itemId)
         return ResponseEntity.ok().build()
     }
+
+    // 4. 루틴 마스터 그룹 삭제
+    @DeleteMapping("/groups/{groupId}")
+    fun deleteGroup(
+        @RequestAttribute("userId") userId: String,
+        @PathVariable groupId: Long
+    ): ResponseEntity<Void> {
+        routineService.deleteGroup(userId.toLong(), groupId)
+        return ResponseEntity.ok().build()
+    }
+
+    // 5. 루틴 자식 항목 삭제
+    @DeleteMapping("/items/{itemId}")
+    fun deleteItem(
+        @RequestAttribute("userId") userId: String,
+        @PathVariable itemId: Long
+    ): ResponseEntity<Void> {
+        routineService.deleteItem(userId.toLong(), itemId)
+        return ResponseEntity.ok().build()
+    }
 }

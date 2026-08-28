@@ -68,4 +68,34 @@ class RoutineService(
 
         item.toggle()
     }
+
+    @Transactional
+    fun deleteGroup(userId: Long, groupId: Long) {
+        // 1. 그룹 엔티티 조회 (Repository 변수명은 실제 코드에 맞게 수정 필요)
+        val group = groupRepository.findByIdOrNull(groupId)
+            ?: throw IllegalArgumentException("존재하지 않는 루틴 그룹입니다.")
+
+        // 2. 권한 검증 (본인이 생성한 루틴만 삭제 가능)
+        if (group.userId != userId) {
+            throw SecurityException("해당 루틴 그룹을 삭제할 권한이 없습니다.")
+        }
+
+        // 3. 삭제 (연관된 자식 항목들이 Cascade 설정에 의해 함께 삭제되어야 함)
+        groupRepository.delete(group)
+    }
+
+    @Transactional
+    fun deleteItem(userId: Long, itemId: Long) {
+        // 1. 자식 항목 엔티티 조회 (본인의 리포지토리 변수명에 맞게 호출)
+        val item = itemRepository.findByIdOrNull(itemId)
+            ?: throw IllegalArgumentException("존재하지 않는 루틴 항목입니다.")
+
+        // 2. 💡 권한 검증: item.routineGroup -> item.group 으로 수정 완료
+        if (item.group.userId != userId) {
+            throw SecurityException("해당 루틴 항목을 삭제할 권한이 없습니다.")
+        }
+
+        // 3. 삭제
+        itemRepository.delete(item)
+    }
 }

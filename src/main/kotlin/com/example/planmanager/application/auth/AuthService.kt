@@ -27,20 +27,20 @@ class AuthService(
 
         userRepository.save(UserEntity(email = email, passwordHash = encodedPassword))
     }
+    // AuthService.kt의 login 함수 수정 예시
     @Transactional
-    fun login(email: String, rawPassword: String): Pair<String, String> {
-        val user = userRepository.findByEmail(email)
-            ?: throw IllegalArgumentException("존재하지 않는 이메일입니다.")
+    fun login(loginId: String, rawPassword: String): Pair<String, String> {
+        // 💡 username 혹은 email 중 하나라도 일치하는 유저 조회 (UserRepository에 쿼리 메서드 추가 필요)
+        val user = userRepository.findByUsernameOrEmail(loginId, loginId)
+            ?: throw IllegalArgumentException("존재하지 않는 아이디 또는 이메일입니다.")
 
         if (!passwordEncoder.matches(rawPassword, user.passwordHash)) {
             throw IllegalArgumentException("비밀번호가 일치하지 않습니다.")
         }
 
-        // Access / Refresh 토큰 쌍 발급
         val accessToken = jwtProvider.createAccessToken(user.id, user.role)
         val refreshToken = jwtProvider.createRefreshToken(user.id, user.role)
 
-        // DB에 Refresh Token 저장 (기존에 있으면 업데이트)
         val tokenEntity = refreshTokenRepository.findById(user.id)
             .map { it.apply { this.token = refreshToken } }
             .orElse(RefreshTokenEntity(userId = user.id, token = refreshToken))
@@ -48,7 +48,6 @@ class AuthService(
 
         return Pair(accessToken, refreshToken)
     }
-
     @Transactional
     fun reissueToken(requestRefreshToken: String): Pair<String, String> {
         if (!jwtProvider.validateToken(requestRefreshToken)) {

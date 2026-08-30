@@ -15,7 +15,8 @@ class AuthController(
     @PostMapping("/signup")
     fun signUp(@RequestBody request: SignUpRequest): ResponseEntity<AuthResponse> {
         return try {
-            authService.signUp(request.email, request.password)
+            // 💡 request.username 전달 추가
+            authService.signUp(request.username, request.email, request.password)
             ResponseEntity.ok(AuthResponse(accessToken = null, refreshToken = null, message = "회원가입이 완료되었습니다."))
         } catch (e: IllegalArgumentException) {
             ResponseEntity.badRequest().body(AuthResponse(accessToken = null, refreshToken = null, message = e.message ?: "회원가입 실패"))
@@ -25,18 +26,17 @@ class AuthController(
     @PostMapping("/login")
     fun login(@RequestBody request: LoginRequest): ResponseEntity<AuthResponse> {
         return try {
-            val (accessToken, refreshToken) = authService.login(request.email, request.password)
+            // 💡 request.loginId 전달로 변경
+            val (accessToken, refreshToken) = authService.login(request.loginId, request.password)
 
-            // 💡 1. 웹 브라우저를 위한 HttpOnly 쿠키 생성 (XSS 방어 및 Cross-Origin 허용)
             val cookie = ResponseCookie.from("refreshToken", refreshToken)
                 .httpOnly(true)
-                .secure(true) // AWS 환경 등 HTTPS 통신에서만 전송 허용
+                .secure(true)
                 .path("/")
-                .sameSite("None") // 프론트와 백엔드 도메인이 다를 때 필수
-                .maxAge(14 * 24 * 60 * 60) // 14일 (초 단위 설정)
+                .sameSite("None")
+                .maxAge(14 * 24 * 60 * 60)
                 .build()
 
-            // 💡 2. 안드로이드 앱을 위해 Body에도 토큰을 그대로 유지 (하위 호환성)
             ResponseEntity.ok()
                 .header(HttpHeaders.SET_COOKIE, cookie.toString())
                 .body(AuthResponse(accessToken, refreshToken, "로그인 성공"))
@@ -47,7 +47,6 @@ class AuthController(
 
     @PostMapping("/reissue")
     fun reissue(
-        // 💡 3. 앱(Header) 또는 웹 브라우저(Cookie) 양쪽에서 들어오는 토큰을 모두 대응
         @RequestHeader("Refresh-Token", required = false) headerToken: String?,
         @CookieValue(name = "refreshToken", required = false) cookieToken: String?
     ): ResponseEntity<AuthResponse> {
@@ -61,7 +60,6 @@ class AuthController(
         return try {
             val (newAccessToken, newRefreshToken) = authService.reissueToken(refreshToken)
 
-            // 💡 4. 재발급 시에도 웹을 위한 새 쿠키 세팅
             val cookie = ResponseCookie.from("refreshToken", newRefreshToken)
                 .httpOnly(true)
                 .secure(true)

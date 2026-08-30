@@ -13,24 +13,25 @@ class AuthService(
     private val userRepository: UserRepository,
     private val passwordEncoder: PasswordEncoder,
     private val jwtProvider: JwtProvider,
-    private val refreshTokenRepository: RefreshTokenRepository // 💡 누락되었던 의존성 주입 추가
+    private val refreshTokenRepository: RefreshTokenRepository
 ) {
 
     @Transactional
-    fun signUp(email: String, rawPassword: String) {
+    fun signUp(username: String, email: String, rawPassword: String) { // 💡 username 매개변수 추가
         if (userRepository.findByEmail(email) != null) {
             throw IllegalArgumentException("이미 가입된 이메일입니다.")
         }
 
-        // 암호화된 비밀번호가 Null로 추론되지 않도록 엘비스 연산자(?:)를 통해 강제 String 타입 변환
-        val encodedPassword = passwordEncoder.encode(rawPassword) ?: ""
+        // (선택) username 중복 검증 로직이 필요하다면 여기에 추가 가능
 
-        userRepository.save(UserEntity(email = email, passwordHash = encodedPassword))
+        val encodedPassword = passwordEncoder.encode(rawPassword) ?: ""
+        // 💡 엔티티 생성 시 username 필드 맵핑
+        userRepository.save(UserEntity(username = username, email = email, passwordHash = encodedPassword))
     }
-    // AuthService.kt의 login 함수 수정 예시
+
     @Transactional
-    fun login(loginId: String, rawPassword: String): Pair<String, String> {
-        // 💡 username 혹은 email 중 하나라도 일치하는 유저 조회 (UserRepository에 쿼리 메서드 추가 필요)
+    fun login(loginId: String, rawPassword: String): Pair<String, String> { // 💡 매개변수 loginId로 변경
+        // 💡 아이디 또는 이메일 일치 여부 확인
         val user = userRepository.findByUsernameOrEmail(loginId, loginId)
             ?: throw IllegalArgumentException("존재하지 않는 아이디 또는 이메일입니다.")
 
@@ -48,6 +49,7 @@ class AuthService(
 
         return Pair(accessToken, refreshToken)
     }
+
     @Transactional
     fun reissueToken(requestRefreshToken: String): Pair<String, String> {
         if (!jwtProvider.validateToken(requestRefreshToken)) {
@@ -64,7 +66,6 @@ class AuthService(
 
         val user = userRepository.findById(userId).orElseThrow()
 
-        // Token Rotation: 새 토큰 쌍 발급 및 DB 갱신
         val newAccessToken = jwtProvider.createAccessToken(userId, user.role)
         val newRefreshToken = jwtProvider.createRefreshToken(userId, user.role)
 

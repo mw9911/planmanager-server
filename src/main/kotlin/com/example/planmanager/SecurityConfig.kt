@@ -47,7 +47,8 @@ class SecurityConfig(
         // 1. 허용할 프론트엔드 도메인 (로컬 개발 환경 추가)
         configuration.allowedOrigins = listOf(
             "http://localhost:5173",
-            "https://planmanager-api.duckdns.org"
+            "https://planmanager-api.duckdns.org",
+            "https://plan-manager-web.vercel.app"
         )
 
         // 2. 허용할 HTTP 메서드

@@ -54,7 +54,10 @@ jobs:
             echo "새로운 애플리케이션 실행: $JAR_NAME"
 
             # 1GB 환경 OOM 방어: JVM Ergonomics 차단 후 힙 64MB 고정
-            nohup java -Xmx64m -Xms64m -jar $JAR_NAME > application.log 2>&1 </dev/null &
+            nohup java -jar -Xmx64m -Xms64m \
+            -DDB_PASSWORD=${{ secrets.DB_PASSWORD }} \
+            -DJWT_SECRET=${{ secrets.JWT_SECRET }} \
+            plan-manager-0.0.1-SNAPSHOT.jar > app.log 2>&1 &
 
             # 기동 확인 — 실패 시 파이프라인을 빨간색으로 떨어뜨림
             sleep 25

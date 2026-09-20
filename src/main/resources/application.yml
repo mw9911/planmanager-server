@@ -3,7 +3,7 @@ spring:
     driver-class-name: com.mysql.cj.jdbc.Driver
     url: jdbc:mysql://planmanager-db.c5ky8g0ccs0m.ap-northeast-2.rds.amazonaws.com:3306/planmanager?serverTimezone=Asia/Seoul&characterEncoding=UTF-8
     username: admin
-    password: zxdasc12
+    password: ${DB_PASSWORD} # 하드코딩 제거 및 환경변수 치환
   jpa:
     database-platform: org.hibernate.dialect.MySQLDialect
     properties:
@@ -14,11 +14,6 @@ spring:
     show-sql: true
 
 jwt:
-  # 하이픈(-)이나 언더바(_)가 없는 완벽한 Base64 인코딩 문자열입니다.
-  secret: "cGxhbm1hbmFnZXJzZXJ2ZXJhcHBsaWNhdGlvbnNlY3JldGtleTIwMjYwODI2"
-  expiration: 1800000 # 기존 Access Token 만료 시간 (예: 30분 = 1000 * 60 * 30)
-  refresh-expiration: 1209600000 # 💡 신규 추가: Refresh Token 만료 시간 (예: 14일 = 1000 * 60 * 60 * 24 * 14)
-
-#jwt:
-#  secret: VmVyeVNlY3JldEtleUZvclBsYW5NYW5hZ2VyQXBwbGljYXRpb25BdXRoZW50aWNhdGlvblB1cnBvc2U= # HMAC-SHA 알고리즘 규격에 맞춘 256비트(32바이트) 이상의 Base64 인코딩 문자열
-#  expiration: 86400000 # 24시간 (밀리초 단위)
+  secret: ${JWT_SECRET} # 하드코딩 제거 및 환경변수 치환
+  expiration: 1800000
+  refresh-expiration: 1209600000

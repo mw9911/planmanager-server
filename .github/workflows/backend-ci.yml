@@ -2,7 +2,7 @@ name: Spring Boot CI/CD to AWS EC2
 
 on:
   push:
-    branches: [ "main", "develop" ] # 과거 코드의 트리거 조건 반영
+    branches: [ "main", "develop" ] # main: 운영 배포 / develop: 통합 검증
 
 jobs:
   deploy:
@@ -15,13 +15,14 @@ jobs:
       - name: Set up JDK 21
         uses: actions/setup-java@v4
         with:
-          java-version: '21' # build.gradle.kts 기준 명확한 팩트 반영
+          java-version: '21' # build.gradle.kts의 toolchain 설정과 일치
           distribution: 'corretto'
 
       - name: Grant execute permission for gradlew
         run: chmod +x gradlew
 
-      # test 단계 스킵하여 프리티어 메모리 방어 및 빌드 속도 향상
+      # 테스트는 로컬에서 수행. Runner에서 Testcontainers가 Docker를 기동하면
+      # 빌드 시간이 크게 늘어 CI 단계에서는 제외함
       - name: Build with Gradle
         run: ./gradlew clean build -x test
 

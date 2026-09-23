@@ -16,5 +16,5 @@ spring:
 jwt:
   secret: ${JWT_SECRET} # 하드코딩 제거 및 환경변수 치환
   expiration: 1800000
-  refresh-expiration: 1209600000
-  #refresh-expiration: 1209600000000000000000
+  #refresh-expiration: 1209600000
+  refresh-expiration: 2592000000000
